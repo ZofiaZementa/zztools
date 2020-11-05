@@ -1,6 +1,7 @@
 import os
 import argparse
 import sys
+import warnings
 
 from todolist import TodoList
 from packagemanager import PackageManager
@@ -9,11 +10,17 @@ import pseudopackages
 
 
 def _collectionsfromargs(args):
-    pseudopackags = pseudopackages.getpackagesfromfile(args.pseudopackages_file)
-    packagemanagers = PackageManager.multiplefromfile(args.packagemanager_file, \
-            args.packagemanagers)
-    return Collection.multiplefromfile(collection_file, pseudopackags, \
-            packagemanagers, collections)
+    try:
+        pseudopackags = pseudopackages.getpackagesfromfile(args.pseudopackages_file)
+        packagemanagers = PackageManager.multiplefromfile(args.packagemanager_file, \
+                args.packagemanagers)
+        collections = Collection.multiplefromfile(collection_file, \
+                pseudopackags, packagemanagers, collections)
+    except (KeyError, FileNotFoundError) as e:
+        errstr = 'Unknown {} while importing the todolist(s)'.format(type(e))
+        print('Error: ' + getattr(e, 'message', errstr), file=sys.stderr)
+        sys.exit(1)
+    return collections
 
 
 def _commandfunctionmapping(key=None):
@@ -25,24 +32,44 @@ def _commandfunctionmapping(key=None):
 
 
 def execute(args):
-    todolists = TodoList.multiplefromfile(args.file, args.todolists)
+    try:
+        todolists = TodoList.multiplefromfile(args.file, args.todolists)
+    except (KeyError, FileNotFoundError, UnsupportedFileTypeError, \
+            ConfigValueError) as e:
+        errstr = 'Unknown {} while importing the todolist(s)'.format(type(e))
+        print('Error: ' + getattr(e, 'message', errstr), file=sys.stderr)
+        sys.exit(1)
     for todolist in todolists:
         todolist.execute()
 
 
 def install(args):
     collections = _collectionsfromargs(args)
+    try:
+        collections = _collectionsfromargs(args)
+    except (KeyError, FileNotFoundError, UnsupportedFileTypeError, \
+            ConfigValueError) as e:
+        errstr = 'Unknown {} while importing the collection(s)'.format(type(e))
+        print('Error: ' + getattr(e, 'message', errstr), file=sys.stderr)
+        sys.exit(1)
     for collection in collections:
         collection.install()
 
 
 def uninstall(args):
     collections = _collectionsfromargs(args)
+    try:
+        collections = _collectionsfromargs(args)
+    except (KeyError, FileNotFoundError, UnsupportedFileTypeError, \
+            ConfigValueError) as e:
+        errstr = 'Unknown {} while importing the collection(s)'.format(type(e))
+        print('Error: ' + getattr(e, 'message', errstr), file=sys.stderr)
+        sys.exit(1)
     for collection in collections:
         collection.uninstall()
 
 
-def parseargs():
+def _parseargs():
     parser = argparse.ArgumentParser('zztools', \
             description='Install packages and execute' \
             'commands based on a todolist in a json')
@@ -109,10 +136,20 @@ def parseargs():
     return parser.parse_args()
 
 
-def main():
+def _main():
     args = parseargs()
     _commandfunctionmapping(args.action)(args)
 
+
+def _clean_formatwarning(message, category, filename, lineno, line=None):
+    """Monkeypatch for the formatwarning method of warnings
+
+    This ist there to output nice looking warnings
+    """
+    return 'Warning: ' + str(message) + '\n'
+
+#Monkeypatch to output nice looking warnings
+warnings.formatwarning = clean_formatwarning
 
 if __name__ == '__main__':
     main()

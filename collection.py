@@ -1,8 +1,9 @@
-import sys
+import warnings
 
 import pseudopackages
 from packagemanager import PackageManager
 import configfilemanager
+from exceptions import ConfigValueError
 
 
 class Collection():
@@ -45,21 +46,27 @@ class Collection():
         name -- the name of the collection in the json, if none is provided, it
                 is assumed that there is only one collection in the json, if not,
                 an error is thrown (default None)
+
+        exceptions:
+        KeyError -- if a needed attribute in the json is not found
+                    this error contains an attribute \"message\", which
+                    contains the errormessage
+        ConfigValueError -- if some attribute in the config has an invalid value
+                            this error contains an attribute \"message\", which
+                            contains the errormessage
         """
         if name is None:
             if len(json) == 1:
                 name = list(json)[0]
             else:
-                print('Error: No name for collection was provided and '
-                        'there were more than one collection in the file', \
-                        file=sys.stderr)
-                sys.exit(1)
+                message = 'No name for collection was provided and ' \
+                        'there were more than one collection in the file'
+                raise ConfigValueError(message)
         try:
             json_collection = json[name]
-        except KeyError:
-            print('Error: Collection {} could not be found'.format(name), \
-                    file=sys.stderr)
-            sys.exit(1)
+        except KeyError as e:
+            e.message = 'Collection {} could not be found'.format(name)
+            raise
         return Collection(name, json_collection, pseudopacks, packagemanagers)
 
     def fromfile(path, pseudopacks, packagemanagers, name=None):
@@ -78,14 +85,36 @@ class Collection():
         name -- the name of the collection in the json, if none is provided, it
                 is assumed that there is only one collection in the json, if not,
                 an error is thrown (default None)
+
+        execptions:
+        FileNotFoundError -- if the file at the given path is not found
+                             this error contains an attribute \"message\", which
+                             contains the errormessage
+        UnsupportedFileTypeError -- if the file has the wrong type (extension)
+                                    this error contains an attribute
+                                    \"message\", which contains the
+                                    errormessage and an attribute filename
+                                    which contains the message
+        KeyError -- if a needed attribute in the json is not found
+                    this error contains an attribute \"message\", which
+                    contains the errormessage
+        ConfigValueError -- if some attribute in the config has an invalid value
+                            this error contains an attribute \"message\", which
+                            contains the errormessage
         """
         try:
             json = configfilemanager.getconfigfromfile(path)
-        except FileNotFoundError:
-            print('Error: File with collections could not be found', \
-                    file=sys.stderr)
-            sys.exit(1)
-        return Collection.fromjson(json, pseudopacks, packagemanagers, name)
+        except FileNotFoundError as e:
+            e.message = 'File with collections at {} could not be found'.format(path)
+            raise
+        try:
+            collection = Collection.fromjson(json, pseudopacks, \
+                    packagemanagers, name)
+        except (KeyError, ConfigValueError) as e:
+            e.message += 'at {}'.format(path)
+            e.filename = path
+            raise
+        return collection
 
     def multiplefromjson(json, pseudopacks, packagemanagers, names=None):
         """Returns multiple Collection objects from the given json
@@ -100,6 +129,14 @@ class Collection():
         name -- the name of the collection in the json, if none is provided, it
                 is assumed that there is only one collection in the json, if not,
                 an error is thrown (default None)
+
+        exceptions:
+        KeyError -- if a needed attribute in the json is not found
+                    this error contains an attribute \"message\", which
+                    contains the errormessage
+        ConfigValueError -- if some attribute in the config has an invalid value
+                            this error contains an attribute \"message\", which
+                            contains the errormessage
         """
         if not names:
             return [Collection.fromjson(json, pseudopacks, packagemanagers, \
@@ -124,15 +161,36 @@ class Collection():
         name -- the name of the collection in the json, if none is provided, it
                 is assumed that there is only one collection in the json, if not,
                 an error is thrown (default None)
+
+        execptions:
+        FileNotFoundError -- if the file at the given path is not found
+                             this error contains an attribute \"message\", which
+                             contains the errormessage
+        UnsupportedFileTypeError -- if the file has the wrong type (extension)
+                                    this error contains an attribute
+                                    \"message\", which contains the
+                                    errormessage and an attribute filename
+                                    which contains the message
+        KeyError -- if a needed attribute in the json is not found
+                    this error contains an attribute \"message\", which
+                    contains the errormessage
+        ConfigValueError -- if some attribute in the config has an invalid value
+                            this error contains an attribute \"message\", which
+                            contains the errormessage
         """
         try:
             json = configfilemanager.getconfigfromfile(path)
-        except FileNotFoundError:
-            print('Error: File with collections could not be found', \
-                    file=sys.stderr)
-            sys.exit(1)
-        return Collection.multiplefromjson(json, pseudopacks, packagemanagers, \
-                name)
+        except FileNotFoundError as e:
+            e.message = 'File with collections at {} could not be found'.format(path)
+            raise
+        try:
+            collections = Collection.multiplefromjson(json, pseudopacks, \
+                    packagemanagers, name)
+        except (KeyError, ConfigValueError) as e:
+            e.message += 'at {}'.format(path)
+            e.filename = path
+            raise
+        return collections
 
     def __init__(self, name, packages, pseudopacks, packagemanagers):
         """Constructor
@@ -153,12 +211,12 @@ class Collection():
                         packages_by_pm[pm.name][pseudoname] = pseudopacks[pseudoname][pm.name]
                         break
                 except KeyError:
-                    print('Warnig: Package {} is not available, skipping'.format(pseudoname), \
-                            file=sys.stderr)
+                    message = 'Package {} is not available, skipping'.format(pseudoname)
+                    warnings.warn(message, UserWarning)
                     break
             else:
-                print('Warning: Package {} has no valid packagemanager, skipping'.format(pseudoname), \
-                        file=sys.stderr)
+                message = 'Package {} has no valid packagemanager, skipping'.format(pseudoname)
+                warnings.warn(message, UserWarning)
         self.name = name
         self.packages_by_pm = packages_by_pm
         self.pms_by_name = {pm.name : pm for pm in packagemanagers}

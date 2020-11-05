@@ -1,5 +1,3 @@
-import sys
-
 import configfilemanager
 
 
@@ -29,10 +27,16 @@ def getpackagesfromfile(path):
 
     execptions:
     FileNotFoundError -- if the file at the given path is not found
+                         this error contains an attribute \"message\", which
+                         contains the errormessage
+    UnsupportedFileTypeError -- if the file has the wrong type (extension)
+                                this error contains an attribute \"message\",
+                                which contains the errormessage and an
+                                attribute filename which contains the message
     """
     try:
         json = configfilemanager.getconfigfromfile(path)
-    except FileNotFoundError:
-        print('File with Packages could not be found', file=sys.stderr)
-        sys.exit(1)
+    except FileNotFoundError as e:
+        e.message = 'File with Packages at path {} could not be found'.format(e.filename)
+        raise
     return getpackagesfromjson(json)

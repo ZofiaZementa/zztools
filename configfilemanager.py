@@ -1,7 +1,8 @@
 import json
 import yaml
 import os
-import sys
+
+from exceptions import UnsupportedFileTypeError
 
 
 def _getconfigfromjsonfile(path):
@@ -41,6 +42,10 @@ def getconfigfromfile(path):
 
     exceptions:
     FileNotFoundError -- if the file at the given path is not found
+    UnsupportedFileTypeError -- if the file has the wrong type (extension)
+                                this error contains an attribute \"message\",
+                                which contains the errormessage and an
+                                attribute filename which contains the message
     """
     filetype = os.path.splitext(path)[1]
     if filetype == '.json':
@@ -49,8 +54,7 @@ def getconfigfromfile(path):
         return _getconfigfromyamlfile(path)
     else:
         if not filetype:
-            print('Error: Filename has no extension', file=sys.stderr)
+            message = 'File at {} has no extension'.format(path)
         else:
-            print('Error: Filetype {} not supported'.format(filetype), \
-                    file=sys.stderr)
-        sys.exit(1)
+            message = 'Filetype {} of file {} not supported'.format(filetype, path)
+        raise UnsupportedFileTypeError(message, path)

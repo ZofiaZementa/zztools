@@ -1,11 +1,13 @@
 import json
 import sys
 import subprocess
+import warnings
 
 import configfilemanager
 import pseudopackages
 from packagemanager import PackageManager
 from collection import Collection
+from exceptions import ConfigValueError
 
 
 class Step():
@@ -33,6 +35,17 @@ class Step():
 
         arguments:
         json -- the json of the whole step already imported into python
+
+        exceptions:
+        FileNotFoundError -- if the file at the given path is not found
+                             this error contains an attribute \"message\", which
+                             contains the errormessage
+        KeyError -- if a needed attribute in the json is not found
+                    this error contains an attribute \"message\", which
+                    contains the errormessage
+        ConfigValueError -- if some attribute in the config has an invalid value
+                            this error contains an attribute \"message\", which
+                            contains the errormessage
         """
         if isinstance(json, list):
             return [Step.fromjson(step) for step in json]
@@ -42,9 +55,9 @@ class Step():
             elif json['type'] == 'execute':
                 return ExecuteStep.fromjson(json)
             else:
-                print('Error: Invalid step type: {}'.format(json['type']), \
-                        file=sys.stderr)
-                sys.exit()
+                message = 'Invalid step type {}'.format(json['type'])
+                raise ConfigValueError(message)
+
 
 class CollectionStep(Step):
     """A step that executes an action on a given collection
@@ -75,6 +88,17 @@ class CollectionStep(Step):
 
         arguments:
         json -- the json of the whole step already imported into python
+
+        exceptions:
+        FileNotFoundError -- if the file at the given path is not found
+                             this error contains an attribute \"message\", which
+                             contains the errormessage
+        KeyError -- if a needed attribute in the json is not found
+                    this error contains an attribute \"message\", which
+                    contains the errormessage
+        ConfigValueError -- if some attribute in the config has an invalid value
+                            this error contains an attribute \"message\", which
+                            contains the errormessage
         """
         try:
             json_command = json['command']
@@ -82,9 +106,8 @@ class CollectionStep(Step):
             packagemanagers_path = json_command['packagemanagers']['path']
             pseudopackages_path = json_command['pseudopackages']['path']
         except KeyError as e:
-            print('Error: Missing attribute {} in collection step'.format(e.args[0]), \
-                    file=sys.stderr)
-            sys.exit()
+            e.message = 'Missing attribute {} in collection step'.format(e.args[0])
+            raise
         pseudopacks = pseudopackages.getpackagesfromfile(pseudopackages_path)
         if 'allowed_packagemanagers' in json_command['packagemanagers']:
             packagemanagers = PackageManager.multiplefromfile(packagemanagers_path, \
@@ -102,9 +125,9 @@ class CollectionStep(Step):
         elif json_command['action'] == 'uninstall':
             return CollectionUninstallStep(json)
         else:
-            print('Error: Invalid action type {} for step {}'.format(json_command['action'], \
-                    json_command['action']), file=sys.stderr)
-            sys.exit()
+            message = 'Invalid action type {} for step {}'.format(json_command['action'], \
+                    json_command['action'])
+            raise ConfigValueError(message)
 
     def __init__(self, collection):
         """Constructor
@@ -155,11 +178,17 @@ class ExecuteStep(Step):
 
         arguments:
         json -- the json of the whole step already imported into python
+
+        exceptions:
+        KeyError -- if a needed attribute in the json is not found
+                    this error contains an attribute \"message\", which
+                    contains the errormessage
         """
         try:
             command = json['command']
-        except KeyError:
-            print('Error: Missing command for execute step', file=sys.stderr)
+        except KeyError as e:
+            e.message = 'Missing command for execute step'
+            raise
         return ExecuteStep(command)
 
     def __init__(self, command):
@@ -200,21 +229,30 @@ class TodoList():
         name -- the name of the todolist in the json, if none is provided, it
                 is assumed that there is only one todolist in the json, if not,
                 an error is thrown (default None)
+
+        exceptions:
+        FileNotFoundError -- if the file at the given path is not found
+                             this error contains an attribute \"message\", which
+                             contains the errormessage
+        KeyError -- if a needed attribute in the json is not found
+                    this error contains an attribute \"message\", which
+                    contains the errormessage
+        ConfigValueError -- if some attribute in the config has an invalid value
+                            this error contains an attribute \"message\", which
+                            contains the errormessage
         """
         if name is None:
             if len(json) == 1:
                 name = list(json)[0]
             else:
-                print('Error: No name for todolist was provided and '
-                        'there were more than one todolist in the file', \
-                        file=sys.stderr)
-                sys.exit(1)
+                message = 'No name for todolist was provided and ' \
+                        'there were more than one todolist in the file'
+                raise ConfigValueError(message)
         try:
             json_todolist = json[name]
-        except KeyError:
-            print('Error: Todolist {} could not be found'.format(name), \
-                    file=sys.stderr)
-            sys.exit(1)
+        except KeyError as e:
+            e.message = 'Todolist {} could not be found'.format(name)
+            raise
         steps = [Step.fromjson(json_step) for json_step in json_todolist]
         return TodoList(name, steps)
 
@@ -230,14 +268,35 @@ class TodoList():
         name -- the name of the todolist in the json, if none is provided, it
                 is assumed that there is only one todolist in the json, if not,
                 an error is thrown (default None)
+
+        execptions:
+        FileNotFoundError -- if the file at the given path is not found
+                             this error contains an attribute \"message\", which
+                             contains the errormessage
+        UnsupportedFileTypeError -- if the file has the wrong type (extension)
+                                    this error contains an attribute
+                                    \"message\", which contains the
+                                    errormessage and an attribute filename
+                                    which contains the message
+        KeyError -- if a needed attribute in the json is not found
+                    this error contains an attribute \"message\", which
+                    contains the errormessage
+        ConfigValueError -- if some attribute in the config has an invalid value
+                            this error contains an attribute \"message\", which
+                            contains the errormessage
         """
         try:
             json = configfilemanager.getconfigfromfile(path)
-        except FileNotFoundError:
-            print('Error: File with todolists could not be found', \
-                    file=sys.stderr)
-            sys.exit(1)
-        return TodoList.fromjson(json)
+        except FileNotFoundError as e:
+            e.message = 'File with todolists at {} could not be found'.format(e.filename)
+            raise
+        try:
+            todolist = fromjson(json)
+        except (KeyError, ConfigValueError) as e:
+            e.message = e.message + ' at {}'.format(path)
+            e.filename = path
+            raise
+        return todolist
 
     def multiplefromjson(json, names=None):
         """Returns multiple TodoList objects from the given file
@@ -246,6 +305,19 @@ class TodoList():
         json -- the json of the whole todolist file already imported into python
         names -- the names of the todolists in the json, if none are provided,
                  all todolists in the json are imported (default None)
+
+        exceptions:
+        FileNotFoundError -- if the file at the given path is not found
+                             This error comes from the collections and similar
+                             objects which have seperate config files
+                             this error contains an attribute \"message\", which
+                             contains the errormessage
+        KeyError -- if a needed attribute in the json is not found
+                    this error contains an attribute \"message\", which
+                    contains the errormessage
+        ConfigValueError -- if some attribute in the config has an invalid value
+                            this error contains an attribute \"message\", which
+                            contains the errormessage
         """
         if not names:
             return [TodoList.fromjson(json, name) for name in json]
@@ -263,14 +335,37 @@ class TodoList():
         path -- the path to the file containing the todolists
         names -- the names of the todolists in the json, if none are provided,
                 all todolists in the json are imported (default None)
+
+        execptions:
+        FileNotFoundError -- if the file at the given path is not found
+                             This error comes from the collections and similar
+                             objects which have seperate config files
+                             this error contains an attribute \"message\", which
+                             contains the errormessage
+        UnsupportedFileTypeError -- if the file has the wrong type (extension)
+                                    this error contains an attribute
+                                    \"message\", which contains the
+                                    errormessage and an attribute filename
+                                    which contains the message
+        KeyError -- if a needed attribute in the json is not found
+                    this error contains an attribute \"message\", which
+                    contains the errormessage
+        ConfigValueError -- if some attribute in the config has an invalid value
+                            this error contains an attribute \"message\", which
+                            contains the errormessage
         """
         try:
             json = configfilemanager.getconfigfromfile(path)
-        except FileNotFoundError:
-            print('Error: File with todolists could not be found', \
-                    file=sys.stderr)
-            sys.exit(1)
-        return TodoList.multiplefromjson(json, names)
+        except FileNotFoundError as e:
+            e.message = 'File with todolists at {} could not be found'.format(e.filename)
+            raise
+        try:
+            todolists = TodoList.multiplefromjson(json, names)
+        except (KeyError, ConfigValueError) as e:
+            e.message += ' at {}'.format(path)
+            e.filename = path
+            raise
+        return todolists
 
     def __init__(self, name, steps):
         """Constructor

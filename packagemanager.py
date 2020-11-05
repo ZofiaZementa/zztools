@@ -2,6 +2,7 @@ import subprocess
 import sys
 
 import configfilemanager
+from exceptions import ConfigValueError
 
 
 class PackageManager():
@@ -39,21 +40,27 @@ class PackageManager():
         name -- the name of the packagemanager in the json, if none is provided,
                 it is assumed that there is only one packagemanager in the json,
                 if not, an error is thrown (default None)
+
+        exceptions:
+        KeyError -- if a needed attribute in the json is not found
+                    this error contains an attribute \"message\", which
+                    contains the errormessage
+        ConfigValueError -- if some attribute in the config has an invalid value
+                            this error contains an attribute \"message\", which
+                            contains the errormessage
         """
         if name is None:
             if len(json) == 1:
                 name = len(json)[0]
             else:
-                print('Error: No name for packagemanager was provided and '
-                        'there were more than one packagemanager in the file', \
-                        file=sys.stderr)
-                sys.exit(1)
+                messake = 'No name for packagemanager was provided and ' \
+                        'there were more than one packagemanager in the file'
+                raise ConfigValueError(message)
         try:
             json_pm = json[name]
-        except KeyError:
-            print('Error: Packagemanager {} could not be found'.format(name), \
-                    file=sys.stderr)
-            sys.exit(1)
+        except KeyError as e:
+            e.message = 'Packagemanager {} could not be found'.format(name)
+            raise
         try:
             command = json_pm['command']
             install_command = json_pm['install']
@@ -61,8 +68,8 @@ class PackageManager():
             accept = json_pm['accept']
             sudo = json_pm['sudo']
         except KeyError as e:
-            print('Error: Attribute {} of packagemanager {} could not pe found'.format(e.args[0], name))
-            sys.exit(1)
+            e.message = 'Attribute {} of packagemanager {} could not pe found'.format(e.args[0], name)
+            raise
         return PackageManager(name, command, install_command, \
                 uninstall_command, accept, sudo)
 
@@ -78,14 +85,35 @@ class PackageManager():
         name -- the name of the packagemanager in the json, if none is provided,
                 it is assumed that there is only one packagemanager in the json,
                 if not, an error is thrown (default None)
+
+        execptions:
+        FileNotFoundError -- if the file at the given path is not found
+                             this error contains an attribute \"message\", which
+                             contains the errormessage
+        UnsupportedFileTypeError -- if the file has the wrong type (extension)
+                                    this error contains an attribute
+                                    \"message\", which contains the
+                                    errormessage and an attribute filename
+                                    which contains the message
+        KeyError -- if a needed attribute in the json is not found
+                    this error contains an attribute \"message\", which
+                    contains the errormessage
+        ConfigValueError -- if some attribute in the config has an invalid value
+                            this error contains an attribute \"message\", which
+                            contains the errormessage
         """
         try:
             json = configfilemanager.getconfigfromfile(path)
-        except FileNotFoundError:
-            print('Error: File with packagemanagers could not be found', \
-                    file=sys.stderr)
-            sys.exit(1)
-        return PackageManager.fromjson(json)
+        except FileNotFoundError as e:
+            e.message = 'File with packagemanagers at {} could not be found'.format(path)
+            raise
+        try:
+            packagemanager = PackageManager.fromjson(json)
+        except (KeyError, ConfigValueError) as e:
+            e.message += 'at {}'.format(path)
+            e.filename = path
+            raise
+        return packagemanager
 
     def multiplefromjson(json, names=None):
         """Returns multiple PackageManager object from the given json
@@ -95,6 +123,14 @@ class PackageManager():
                 python
         names -- the names of the packagemanagers in the json, if none are
                 provided, all todolists in the json are imported (default None)
+
+        exceptions:
+        KeyError -- if a needed attribute in the json is not found
+                    this error contains an attribute \"message\", which
+                    contains the errormessage
+        ConfigValueError -- if some attribute in the config has an invalid value
+                            this error contains an attribute \"message\", which
+                            contains the errormessage
         """
         if not names:
             return [PackageManager.fromjson(json, name) for name in json]
@@ -112,14 +148,35 @@ class PackageManager():
         path -- the path to the file containing the packagemanagers
         names -- the names of the packagemanagers in the json, if none are
                 provided, all todolists in the json are imported (default None)
+
+        execptions:
+        FileNotFoundError -- if the file at the given path is not found
+                             this error contains an attribute \"message\", which
+                             contains the errormessage
+        UnsupportedFileTypeError -- if the file has the wrong type (extension)
+                                    this error contains an attribute
+                                    \"message\", which contains the
+                                    errormessage and an attribute filename
+                                    which contains the message
+        KeyError -- if a needed attribute in the json is not found
+                    this error contains an attribute \"message\", which
+                    contains the errormessage
+        ConfigValueError -- if some attribute in the config has an invalid value
+                            this error contains an attribute \"message\", which
+                            contains the errormessage
         """
         try:
             json = configfilemanager.getconfigfromfile(path)
-        except FileNotFoundError:
-            print('Error: File with packagemanagers could not be found', \
-                    file=sys.stderr)
-            sys.exit(1)
-        return PackageManager.multiplefromjson(json, names)
+        except FileNotFoundError as e:
+            e.message = 'File with packagemanagers at {} could not be found'.format(path)
+            raise
+        try:
+            packagemanagers = PackageManager.multiplefromjson(json, names)
+        except (KeyError, ConfigValueError) as e:
+            e.message += 'at {}'.format(path)
+            e.filename = path
+            raise
+        return packagemanagers
 
     def __init__(self, name, command, install_command, uninstall_command, \
             accept, sudo):
