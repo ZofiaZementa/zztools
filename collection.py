@@ -126,9 +126,8 @@ class Collection():
                        python
         packagemanagers -- a list of PackageManager objects which also specify
                            the order in of which packagemanager to use first
-        name -- the name of the collection in the json, if none is provided, it
-                is assumed that there is only one collection in the json, if not,
-                an error is thrown (default None)
+        names -- the names of the collections in the json, if none is provided,
+                all are imported (default None)
 
         exceptions:
         KeyError -- if a needed attribute in the json is not found
@@ -158,9 +157,8 @@ class Collection():
                        python
         packagemanagers -- a list of PackageManager objects which also specify
                            the order in of which packagemanager to use first
-        name -- the name of the collection in the json, if none is provided, it
-                is assumed that there is only one collection in the json, if not,
-                an error is thrown (default None)
+        names -- the names of the collections in the file, if none is provided,
+                all are imported (default None)
 
         execptions:
         FileNotFoundError -- if the file at the given path is not found
