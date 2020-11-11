@@ -62,16 +62,13 @@ class PackageManager():
             e.message = 'Packagemanager {} could not be found'.format(name)
             raise
         try:
-            command = json_pm['command']
             install_command = json_pm['install']
             uninstall_command = json_pm['uninstall']
-            accept = json_pm['accept']
             sudo = json_pm['sudo']
         except KeyError as e:
             e.message = 'Attribute {} of packagemanager {} could not pe found'.format(e.args[0], name)
             raise
-        return PackageManager(name, command, install_command, \
-                uninstall_command, accept, sudo)
+        return PackageManager(name, install_command, uninstall_command,  sudo)
 
     def fromfile(path, name=None):
         """Returns a TodoList object from the given file
@@ -178,23 +175,18 @@ class PackageManager():
             raise
         return packagemanagers
 
-    def __init__(self, name, command, install_command, uninstall_command, \
-            accept, sudo):
+    def __init__(self, name, install_command, uninstall_command, sudo):
         """Constructor
 
         arguments:
         name -- the name of the packagemanager
-        command -- the base command of the packagemanager
         install_command -- the install command of the packagemanager
         uninstall_command -- the uninstall command of the packagemanager
-        accept -- the accept part of the packagemanager command
         sudo -- whether to put sudo in front of the command or not
         """
         self.name = name
-        self.command = command
         self.install_command = install_command
         self.uninstall_command = uninstall_command
-        self.accept = accept
         self.sudo = sudo
 
     def _executecommand(self, command, override_sudo=None):
@@ -226,8 +218,7 @@ class PackageManager():
                          class, if true or false, it uses/doesnt use sudo
                          accordingly (default None)
         """
-        self._executecommand([ self.command, self.install_command, \
-                self.accept, *packages], override_sudo)
+        self._executecommand([self.install_command, *packages], override_sudo)
 
 
     def uninstall(self, packages, override_sudo=None):
@@ -239,5 +230,4 @@ class PackageManager():
                          class, if true or false, it uses/doesnt use sudo
                          accordingly (default None)
         """
-        self._executecommand([self.command, self.uninstall_command, \
-                self.accept, *packages], override_sudo)
+        self._executecommand([self.uninstall_command, *packages], override_sudo)
