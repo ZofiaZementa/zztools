@@ -127,17 +127,15 @@ def _parseargs():
             dest='collections')
     parser_action_install = subparser_action.add_parser('install', \
             description='Installs the given collections', \
-            parents=[packagepanager_parser], \
-            add_help=False)
+            parents=[packagepanager_parser])
     parser_action_uninstall = subparser_action.add_parser('uninstall', \
             description='Uninstalls the given collections', \
-            parents=[packagepanager_parser], \
-            add_help=False)
+            parents=[packagepanager_parser])
     return parser.parse_args()
 
 
 def _main():
-    args = parseargs()
+    args = _parseargs()
     _commandfunctionmapping(args.action)(args)
 
 
@@ -149,7 +147,7 @@ def _clean_formatwarning(message, category, filename, lineno, line=None):
     return 'Warning: ' + str(message) + '\n'
 
 #Monkeypatch to output nice looking warnings
-warnings.formatwarning = clean_formatwarning
+warnings.formatwarning = _clean_formatwarning
 
 if __name__ == '__main__':
-    main()
+    _main()
