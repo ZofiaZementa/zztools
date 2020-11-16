@@ -14,8 +14,8 @@ def _collectionsfromargs(args):
         pseudopackags = pseudopackages.getpackagesfromfile(args.pseudopackages_file)
         packagemanagers = PackageManager.multiplefromfile(args.packagemanager_file, \
                 args.packagemanagers)
-        collections = Collection.multiplefromfile(collection_file, \
-                pseudopackags, packagemanagers, collections)
+        collections = Collection.multiplefromfile(args.collection_file, \
+                pseudopackags, packagemanagers, args.collections)
     except (KeyError, FileNotFoundError) as e:
         errstr = 'Unknown {} while importing the todolist(s)'.format(type(e))
         print('Error: ' + getattr(e, 'message', errstr), file=sys.stderr)

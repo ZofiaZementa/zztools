@@ -26,6 +26,7 @@ class Collection():
 
     instance variables:
     name -- the name of the collection
+    collections -- the collections in this collection
     packages_by_pm -- a dict mapping each packagemanager name to a list of
                       tuples, one for each package to install, containing the
                       pseudoname and the actual name in the packagemanager
@@ -67,7 +68,21 @@ class Collection():
         except KeyError as e:
             e.message = 'Collection {} could not be found'.format(name)
             raise
-        return Collection(name, json_collection, pseudopacks, packagemanagers)
+        try:
+            collecticon_packages = json_collection['packages']
+        except KeyError:
+            collecticon_packages = []
+        try:
+            collection_collection_names = json_collection['collections']
+        except KeyError:
+            collection_collection_names = []
+        if not collection_collection_names:
+            collection_collections = Collection.multiplefromjson(json, \
+                    pseudopackages, packagemanagers, collection_collection_names)
+        else:
+            collection_collections = []
+        return Collection(name, collection_collections, collecticon_packages, \
+                pseudopacks, packagemanagers)
 
     def fromfile(path, pseudopacks, packagemanagers, name=None):
         """Returns a TodoList object from the given file
@@ -183,18 +198,20 @@ class Collection():
             raise
         try:
             collections = Collection.multiplefromjson(json, pseudopacks, \
-                    packagemanagers, name)
+                    packagemanagers, names)
         except (KeyError, ConfigValueError) as e:
             e.message += 'at {}'.format(path)
             e.filename = path
             raise
         return collections
 
-    def __init__(self, name, packages, pseudopacks, packagemanagers):
+    def __init__(self, name, collections, packages, pseudopacks, \
+            packagemanagers):
         """Constructor
 
         arguments:
         name -- name of this collection
+        collections -- a list of the collections in this collection
         packages -- list of packagnames as strings which to install
         pseudopacks -- the psudopackages as imported directly from json into
                        python
@@ -216,6 +233,7 @@ class Collection():
                 message = 'Package {} has no valid packagemanager, skipping'.format(pseudoname)
                 warnings.warn(message, UserWarning)
         self.name = name
+        self.collections = collections
         self.packages_by_pm = packages_by_pm
         self.pms_by_name = {pm.name : pm for pm in packagemanagers}
 
@@ -240,8 +258,12 @@ class Collection():
         """Install all the packages of the collection"""
         for pm_name in self.packages_by_pm:
             self.pms_by_name[pm_name].install(list(self.packages_by_pm[pm_name].values()))
+        for collection in self.collections:
+            collection.install()
 
     def uninstall(self):
         """Uninstall all the pakages of the collection"""
         for pm_name in self.packages_by_pm:
             self.pms_by_name[pm_name].uninstall(list(self.packages_by_pm[pm_name].values()))
+        for collection in self.collections:
+            collection.install()
