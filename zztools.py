@@ -24,11 +24,11 @@ def _collectionsfromargs(args):
 
 
 def _commandfunctionmapping(key=None):
-    mapping = {'execute': execute, 'install': install, 'uninstall': uninstall}
-    if not key:
-        return mapping
-    else:
-        return mapping[key]
+    mapping = {None: None, 'execute': execute, 'install': install, 'uninstall': uninstall}
+    return mapping[key]
+
+def _noaction(args):
+    print('You have to input a command')
 
 
 def execute(args):
@@ -69,7 +69,7 @@ def uninstall(args):
         collection.uninstall()
 
 
-def _parseargs():
+def _parser():
     parser = argparse.ArgumentParser('zztools', \
             description='Install packages and execute' \
             'commands based on a todolist in a json')
@@ -131,12 +131,16 @@ def _parseargs():
     parser_action_uninstall = subparser_action.add_parser('uninstall', \
             description='Uninstalls the given collections', \
             parents=[packagepanager_parser])
-    return parser.parse_args()
+    return parser
 
 
 def _main():
-    args = _parseargs()
-    _commandfunctionmapping(args.action)(args)
+    args = _parser().parse_args()
+    function = _commandfunctionmapping(args.action)
+    if not function:
+        _parser().print_usage()
+    else:
+        function(args)
 
 
 def _clean_formatwarning(message, category, filename, lineno, line=None):
