@@ -27,9 +27,6 @@ def _commandfunctionmapping(key=None):
     mapping = {None: None, 'execute': execute, 'install': install, 'uninstall': uninstall}
     return mapping[key]
 
-def _noaction(args):
-    print('You have to input a command')
-
 
 def execute(args):
     try:
