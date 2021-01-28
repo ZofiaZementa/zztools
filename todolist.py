@@ -1,11 +1,7 @@
-import json
-import sys
-import subprocess
-import warnings
-
 import configfilemanager
 import pseudopackages
 from downloader import download
+from executor import execute_command
 from packagemanager import PackageManager
 from collection import Collection
 from exceptions import ConfigValueError
@@ -202,7 +198,7 @@ class ExecuteStep(Step):
 
     def execute(self):
         """Executes the command of this step"""
-        subprocess.run(self.command.split(' '), stderr=sys.stderr)
+        execute_command(self.command)
 
 
 class DownloadStep(Step):
@@ -238,6 +234,7 @@ class DownloadStep(Step):
     def execute(self):
         """Downloads the url with the given tool"""
         download(self.url)
+
 
 class TodoList():
     """A List of steps which can be executed

@@ -1,8 +1,6 @@
-import subprocess
-import sys
-
 import configfilemanager
 from exceptions import ConfigValueError
+from executor import execute_command
 
 
 class PackageManager():
@@ -200,13 +198,10 @@ class PackageManager():
                          accordingly (default None)
         """
         if override_sudo is None:
-            sudo = self.sudo
+            sudo =self.sudo
         else:
             sudo = override_sudo
-        if sudo:
-            subprocess.run(['sudo', *command], stderr=sys.stderr)
-        else:
-            subprocess.run(command, stderr=sys.stderr)
+        execute_command(command, sudo=sudo)
 
 
     def install(self, packages, override_sudo=None):
@@ -218,7 +213,9 @@ class PackageManager():
                          class, if true or false, it uses/doesnt use sudo
                          accordingly (default None)
         """
-        self._executecommand([self.install_command, *packages], override_sudo)
+        if packages:
+            command = '{} {}'.format(self.install_command, ' '.join(packages))
+            self._executecommand(command, override_sudo)
 
 
     def uninstall(self, packages, override_sudo=None):
@@ -230,4 +227,6 @@ class PackageManager():
                          class, if true or false, it uses/doesnt use sudo
                          accordingly (default None)
         """
-        self._executecommand([self.uninstall_command, *packages], override_sudo)
+        if packages:
+            command = '{} {}'.format(self.uninstall_command, ' '.join(packages))
+            self._executecommand(command, override_sudo)
