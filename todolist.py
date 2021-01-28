@@ -5,6 +5,7 @@ import warnings
 
 import configfilemanager
 import pseudopackages
+from downloader import download
 from packagemanager import PackageManager
 from collection import Collection
 from exceptions import ConfigValueError
@@ -203,6 +204,40 @@ class ExecuteStep(Step):
         """Executes the command of this step"""
         subprocess.run(self.command.split(' '), stderr=sys.stderr)
 
+
+class DownloadStep(Step):
+
+    def fromjson(json):
+        """Return an object of this class from a json
+
+        arguments:
+        json -- the json of the whole step already imported into python
+
+        exceptions:
+        KeyError -- if a needed attribute in the json is not found
+                    this error contains an attribute \"message\", which
+                    contains the errormessage
+        """
+        try:
+            command = json['command']
+            url = command['url']
+        except KeyError as e:
+            e.message = 'Missing attribute {} in get step'.format(e.args[0])
+            raise
+        return DownloadStep(url)
+
+    def __init__(self, url):
+        """Constructor
+
+        arguments:
+        url -- the url which to download
+        tool -- tool which to use to download the url
+        """
+        self.url = url
+
+    def execute(self):
+        """Downloads the url with the given tool"""
+        download(self.url)
 
 class TodoList():
     """A List of steps which can be executed
