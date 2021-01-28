@@ -47,10 +47,17 @@ class Step():
         if isinstance(json, list):
             return [Step.fromjson(step) for step in json]
         else:
-            if json['type'] == 'collection':
+            try:
+                type = json['type']
+            except KeyError:
+                e.message = 'Missing type in step'
+                raise
+            if type == 'collection':
                 return CollectionStep.fromjson(json)
-            elif json['type'] == 'execute':
+            elif type == 'execute':
                 return ExecuteStep.fromjson(json)
+            elif type == 'download':
+                return DownloadStep.fromjson(json)
             else:
                 message = 'Invalid step type {}'.format(json['type'])
                 raise ConfigValueError(message)
