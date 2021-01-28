@@ -76,9 +76,9 @@ class Collection():
             collection_collection_names = json_collection['collections']
         except KeyError:
             collection_collection_names = []
-        if not collection_collection_names:
+        if collection_collection_names:
             collection_collections = Collection.multiplefromjson(json, \
-                    pseudopackages, packagemanagers, collection_collection_names)
+                    pseudopacks, packagemanagers, collection_collection_names)
         else:
             collection_collections = []
         return Collection(name, collection_collections, collecticon_packages, \
