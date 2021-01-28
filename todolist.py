@@ -227,20 +227,23 @@ class DownloadStep(Step):
         except KeyError as e:
             e.message = 'Missing attribute {} in get step'.format(e.args[0])
             raise
-        return DownloadStep(url)
+        if 'to' in command:
+            to = command['to']
+        return DownloadStep(url, to)
 
-    def __init__(self, url):
+    def __init__(self, url, to=None):
         """Constructor
 
         arguments:
         url -- the url which to download
-        tool -- tool which to use to download the url
+        to -- where to download it to
         """
         self.url = url
+        self.to = to
 
     def execute(self):
         """Downloads the url with the given tool"""
-        download(self.url)
+        download(self.url, to=self.to)
 
 
 class TodoList():

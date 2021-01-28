@@ -1,10 +1,13 @@
 from executor import execute_command
 
-def download(url):
+def download(url, to=None):
     """Download a given url
 
     arguments:
     url -- the url which to download
     """
-    command = '{} {}'.format('wget', url)
+    if to:
+        command = 'wget -P {} {}'.format(to, url)
+    else:
+        command = 'wget {}'.format(url)
     execute_command(command)
