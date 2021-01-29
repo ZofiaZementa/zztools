@@ -1,7 +1,13 @@
+import uuid
+import tempfile
+import os
+import validators
+
 import configfilemanager
 import pseudopackages
 from downloader import download
 from executor import execute_command
+from unpacker import unpack
 from packagemanager import PackageManager
 from collection import Collection
 from exceptions import ConfigValueError
@@ -58,6 +64,8 @@ class Step():
                 return ExecuteStep.fromjson(json)
             elif type == 'download':
                 return DownloadStep.fromjson(json)
+            elif type == 'unpack':
+                return UnpackStep.fromjson(json)
             else:
                 message = 'Invalid step type {}'.format(json['type'])
                 raise ConfigValueError(message)
@@ -209,6 +217,18 @@ class ExecuteStep(Step):
 
 
 class DownloadStep(Step):
+    """A step that downloads something
+
+    class methods:
+    fromjson() -- returns an DownloadStep object from json
+
+    instance methods:
+    execute -- executes the step
+
+    instance variables:
+    url -- the url from which to download
+    to -- where to download to, can be None
+    """
 
     def fromjson(json):
         """Return an object of this class from a json
@@ -225,10 +245,9 @@ class DownloadStep(Step):
             command = json['command']
             url = command['url']
         except KeyError as e:
-            e.message = 'Missing attribute {} in get step'.format(e.args[0])
+            e.message = 'Missing attribute {} in download step'.format(e.args[0])
             raise
-        if 'to' in command:
-            to = command['to']
+        to = command.get('to', None)
         return DownloadStep(url, to)
 
     def __init__(self, url, to=None):
@@ -243,7 +262,101 @@ class DownloadStep(Step):
 
     def execute(self):
         """Downloads the url with the given tool"""
-        download(self.url, to=self.to)
+        download(self.url, todir=self.to)
+
+
+class UnpackStep(Step):
+    """A step that unpacks something
+
+    this is an \"abstract\" class, it only implements fromjson and the
+    constructor and should not be instaciated. All child classes should
+    implement the following methods:
+
+    exceute(self) -- execute the step
+
+    class methods:
+    fromjson() -- returns an object of this class from a json
+
+    instance variables:
+    archive -- the path or url to the archive which to unpack
+    to -- the path to where to unpack the archive, this can be None
+    """
+
+    def fromjson(json):
+        """Return an object of this class from a json
+
+        If the to value in the json command is a valid url (using the vaildators
+        package), a DownloadUnpackStep is returned, otherwise a LocalUnpackStep.
+        This means the \"https\" part of the url can't be omitted, because
+        otherwis it is indistinguishable from a path.
+
+        arguments:
+        json -- the json of the whole step already imported into python
+
+        exceptions:
+        KeyError -- if a needed attribute in the json is not found
+                    this error contains an attribute \"message\", which
+                    contains the errormessage
+        """
+        try:
+            command = json['command']
+            archive = command['archive']
+        except KeyError as e:
+            e.message = 'Missing attribute {} in unpack step'.format(e.args[0])
+            raise
+        to = command.get('to', None)
+        if validators.url(archive):
+            return DownloadUnpackStep(archive, to)
+        else:
+            return LocalUnpackStep(archive, to)
+
+    def __init__(self, archive, to=None):
+        """Constructor
+
+        arguments:
+        archive -- the path or url to the archive which to unpack
+        to -- the directory where to unpack the archive to (default=None)
+              if none is given, the archive will be unpacked in the current
+              directory
+        """
+        self.archive = archive
+        self.to = to
+
+
+class LocalUnpackStep(UnpackStep):
+    """Regular unpack step that unpacks a local file
+
+    This class inherits from UnpackStep
+
+    instance methods:
+    execute() -- executes the step
+    """
+
+    def execute(self):
+        """Unpacks the archive at the given path"""
+        unpack(self.archive, self.to)
+
+
+class DownloadUnpackStep(UnpackStep):
+    """Unpack step which downloads the archive first
+
+    This class inherits from UnpackStep
+
+    instance methods:
+    execute() -- executes the step
+    """
+
+    def execute(self):
+        """Downloads the archive from the given url and unpacks it
+
+        This method downloads the archive from the url in self to a random
+        filename in the tempdir, unpacks that file to the path in self and
+        deletes the tempfile
+        """
+        path = '{}/{}'.format(tempfile.gettempdir(), uuid.uuid4())
+        download(self.archive, tofile=path)
+        unpack(path, self.to)
+        os.remove(path)
 
 
 class TodoList():
