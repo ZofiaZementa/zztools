@@ -1,6 +1,6 @@
 import configfilemanager
 from exceptions import ConfigValueError
-from executor import execute_command
+from utilities.executor import execute_command
 
 
 class PackageManager():

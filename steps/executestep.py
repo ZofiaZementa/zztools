@@ -1,5 +1,5 @@
 from .step import Step
-from executor import execute_command
+from utilities.executor import execute_command
 
 
 class ExecuteStep(Step):

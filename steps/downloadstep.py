@@ -1,5 +1,5 @@
 from .step import Step
-from downloader import download
+from utilities.downloader import download
 
 
 class DownloadStep(Step):

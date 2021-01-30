@@ -4,8 +4,8 @@ import uuid
 import os
 
 from .step import Step
-from downloader import download
-from unpacker import unpack
+from utilities.downloader import download
+from utilities.unpacker import unpack
 
 
 class UnpackStep(Step):

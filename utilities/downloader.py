@@ -1,4 +1,4 @@
-from executor import execute_command
+from .executor import execute_command
 
 def download(url, todir=None, tofile=None):
     """Download a given url
