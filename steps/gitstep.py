@@ -32,10 +32,7 @@ class GitStep(Step):
             except KeyError as e:
                 e.message = 'Missing attribute {} in git clone step'.format(e.args[0])
                 raise
-            try:
-                path = command['path']
-            except KeyError:
-                path = None
+            path = command.get('path', None)
             return GitCloneStep(remoteurl, path)
         else:
             message = 'Invalid action type {} for git step'.format(action)
