@@ -53,7 +53,7 @@ class TodoList():
             e.message = 'Todolist {} could not be found'.format(name)
             raise
         steps = [Steps.fromjson(json_step) for json_step in json_todolist]
-        return TodoList(name, steps)
+        return TodoList(steps)
 
     def fromfile(path, name=None):
         """Returns a TodoList object from the given file
@@ -166,14 +166,12 @@ class TodoList():
             raise
         return todolists
 
-    def __init__(self, name, steps):
+    def __init__(self, steps):
         """Constructor
 
         arguments:
-        name -- the name of this TodoList
         steps -- a list/tuple of the steps which to execute
         """
-        self.name = name
         self.steps = steps
 
     def execute(self):
