@@ -96,7 +96,7 @@ class DownloadUnpackStep(UnpackStep):
         filename in the tempdir, unpacks that file to the path in self and
         deletes the tempfile
         """
-        path = os.path.join(tempfile.gettempdir(), uuid.uuid4())
+        path = os.path.join(tempfile.gettempdir(), str(uuid.uuid4()))
         download(self.archive, tofile=path)
         unpack(path, self.to)
         os.remove(path)
