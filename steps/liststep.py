@@ -46,3 +46,16 @@ class ListStep(Step):
         else:
             message = 'Found neither path nor name in todolist step'
             raise ConfigValueError(message)
+
+    def fromsteps(steps):
+        """Return a todolist object from a liststep json
+
+        This doesn't actually return a ListStep object, but a Todolist object,
+        since the Todolist object is very similar to this object.
+        This method doesn't check for circular todolist calls, so be careful
+        with that.
+
+        arguments:
+        steps -- a list of steps for the todolist
+        """
+        return todolist.TodoList(steps)
