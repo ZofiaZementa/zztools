@@ -33,7 +33,7 @@ class ConfigValueError(ValueError):
     message -- the errormessage
     """
 
-    def __init(self, message):
+    def __init__(self, message):
         """Constructor
 
         arguments:

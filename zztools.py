@@ -7,6 +7,7 @@ from todolist import TodoList
 from packagemanager import PackageManager
 from collection import Collection
 import pseudopackages
+from exceptions import ConfigValueError, UnsupportedFileTypeError
 
 
 def _collectionsfromargs(args):
