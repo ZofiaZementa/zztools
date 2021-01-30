@@ -52,7 +52,7 @@ class TodoList():
         except KeyError as e:
             e.message = 'Todolist {} could not be found'.format(name)
             raise
-        steps = [Steps.fromjson(json_step) for json_step in json_todolist]
+        steps = [Steps.fromjson(json_step, json) for json_step in json_todolist]
         return TodoList(steps)
 
     def fromfile(path, name=None):

@@ -16,11 +16,12 @@ class DownloadStep(Step):
     to -- where to download to, can be None
     """
 
-    def fromjson(json):
+    def fromjson(stepjson, listjson):
         """Return an object of this class from a json
 
         arguments:
-        json -- the json of the whole step already imported into python
+        stepjson -- the json of the whole step already imported into python
+        listjson -- the json of the whole list file the step was in
 
         exceptions:
         KeyError -- if a needed attribute in the json is not found
@@ -28,7 +29,7 @@ class DownloadStep(Step):
                     contains the errormessage
         """
         try:
-            command = json['command']
+            command = stepjson['command']
             url = command['url']
         except KeyError as e:
             e.message = 'Missing attribute {} in download step'.format(e.args[0])

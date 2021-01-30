@@ -14,14 +14,15 @@ class GitStep(Step):
     remoteurl -- url to the remote repository
     """
 
-    def fromjson(json):
+    def fromjson(stepjson, listjson):
         """Return a GitStep object of a child step
 
         arguments:
-        json -- the json of the whole step already imported into python
+        stepjson -- the json of the whole step already imported into python
+        listjson -- the json of the whole list file the step was in
         """
         try:
-            command = json['command']
+            command = stepjson['command']
             action = command['action']
         except KeyError as e:
             e.message = 'Missing attribute {} in git step'.format(e.args[0])

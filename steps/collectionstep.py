@@ -26,14 +26,15 @@ class CollectionStep(step.Step):
     collection -- holds the collection for the step
     """
 
-    def fromjson(json):
+    def fromjson(stepjson, listjson):
         """Return a Step object of a child step
 
         Returns an object of a child class of CollectionStep, either a
         CollectionInstallStep or a CollectionUninstallStep
 
         arguments:
-        json -- the json of the whole step already imported into python
+        stepjson -- the json of the whole step already imported into python
+        listjson -- the json of the whole list file the step was in
 
         exceptions:
         FileNotFoundError -- if the file at the given path is not found
@@ -47,7 +48,7 @@ class CollectionStep(step.Step):
                             contains the errormessage
         """
         try:
-            json_command = json['command']
+            json_command = stepjson['command']
             collection_path = json_command['collection']['path']
             packagemanagers_path = json_command['packagemanagers']['path']
             pseudopackages_path = json_command['pseudopackages']['path']
@@ -69,7 +70,7 @@ class CollectionStep(step.Step):
         if json_command['action'] == 'install':
             return CollectionInstallStep(collection)
         elif json_command['action'] == 'uninstall':
-            return CollectionUninstallStep(json)
+            return CollectionUninstallStep(stepjson)
         else:
             message = 'Invalid action type {} for step {}'.format(json_command['action'], \
                     json_command['action'])

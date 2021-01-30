@@ -25,7 +25,7 @@ class UnpackStep(Step):
     to -- the path to where to unpack the archive, this can be None
     """
 
-    def fromjson(json):
+    def fromjson(stepjson, listjson):
         """Return an object of this class from a json
 
         If the to value in the json command is a valid url (using the vaildators
@@ -34,7 +34,8 @@ class UnpackStep(Step):
         otherwis it is indistinguishable from a path.
 
         arguments:
-        json -- the json of the whole step already imported into python
+        stepjson -- the json of the whole step already imported into python
+        listjson -- the json of the whole list file the step was in
 
         exceptions:
         KeyError -- if a needed attribute in the json is not found
@@ -42,7 +43,7 @@ class UnpackStep(Step):
                     contains the errormessage
         """
         try:
-            command = json['command']
+            command = stepjson['command']
             archive = command['archive']
         except KeyError as e:
             e.message = 'Missing attribute {} in unpack step'.format(e.args[0])
