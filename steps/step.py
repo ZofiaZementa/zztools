@@ -15,3 +15,6 @@ class Step():
     that allows it to be created without a json and an execute(self) method,
     which executes the step.
     """
+
+    def __bool__(self):
+        return True
