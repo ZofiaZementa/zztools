@@ -1,25 +1,18 @@
 from .step import Step
 from exceptions import ConfigValueError
-import todolist
+import todolist as todolist_mod
 
 
 class ListStep(Step):
     """A step that is another todolist
 
-    This step shouldn't be instanciated, since the fromjson method doesn't
-    actually return a ListStep object, but a Todolist object, since both use
-    the execute funtions to execute, this class is mainly there if this has to
-    be changed in the future, and for continuity.
-
     class methods:
-    fromjson() -- return a todolist object
+    fromjson() -- return an object of this class from a json
     """
 
     def fromjson(stepjson, listjson):
-        """Return a todolist object from a liststep json
+        """Return an object of this class from a json
 
-        This doesn't actually return a ListStep object, but a Todolist object,
-        since the Todolist object is very similar to this object.
         This method doesn't check for circular todolist calls, so be careful
         with that.
 
@@ -40,22 +33,22 @@ class ListStep(Step):
         path = command.get('path', None)
         name = command.get('name', None)
         if path:
-            return todolist.TodoList.fromfile(path, name)
+            todolist = todolist_mod.TodoList.fromfile(path, name)
         elif name:
-            return todolist.TodoList.fromjson(listjson, name)
+            todolist = todolist_mod.TodoList.fromjson(listjson, name)
         else:
             message = 'Found neither path nor name in todolist step'
             raise ConfigValueError(message)
+        return ListStep(todolist)
 
-    def fromsteps(steps):
-        """Return a todolist object from a liststep json
-
-        This doesn't actually return a ListStep object, but a Todolist object,
-        since the Todolist object is very similar to this object.
-        This method doesn't check for circular todolist calls, so be careful
-        with that.
+    def __init__(self, todolist):
+        """Constructor
 
         arguments:
-        steps -- a list of steps for the todolist
+        todolist -- the todolist item for this step
         """
-        return todolist.TodoList(steps)
+        self.todolist = todolist
+
+    def execute(self):
+        """Execute this step"""
+        self.todolist.execute()
