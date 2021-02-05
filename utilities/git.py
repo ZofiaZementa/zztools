@@ -19,10 +19,33 @@ def clone(url, todir=None):
                         be found in the repository url
     """
     if not todir:
-        reponame_with_git = os.path.basename(urllib.parse.urlparse(url).path)
-        if not reponame_with_git:
-            message = 'couldn\'t find name of repository in url {}'.format(url)
-            raise ConfigValueError(message)
-        reponame = reponame_with_git.removesuffix('.git')
+        reponame = get_repo_name_from_url(url)
         todir = os.path.join(os.getcwd(), reponame)
     Repo.clone_from(url, todir)
+
+
+def is_git_url(url):
+    """Check whether an url is an url to a git repo
+
+    arguments:
+    url -- the url which to check
+    """
+    return url.endswith('.git')
+
+
+def get_repo_name_from_url(url):
+    """Get the repo name from a git url
+
+    arguments:
+    url -- the url which to get the name from
+
+    exceptions:
+    ValueError -- if the name of the repo cound't be found in the url
+    """
+    reponame_with_git = os.path.basename(urllib.parse.urlparse(url).path)
+    if not reponame_with_git:
+        message = 'couldn\'t find name of repository in url {}'.format(url)
+        v = ValueError(message)
+        v.message = message
+        raise v
+    return reponame_with_git.removesuffix('.git')
