@@ -25,11 +25,8 @@ class Executor(types.ModuleType):
 
         arguments:
         sudo -- what to override sudo with
-
-        exceptions:
-        TypeError -- if the given object does not implement bool
         """
-        self._override_sudo = sudo
+        self._override_sudo = bool(sudo)
 
     @override_sudo.getter
     def override_sudo(self) -> bool:
@@ -39,10 +36,7 @@ class Executor(types.ModuleType):
         AttributeError -- if override_sudo is not set
         """
         if self.is_sudo_overridden():
-            if self._override_sudo:
-                return True
-            else:
-                return False
+            return self._override_sudo
         else:
             message = 'Attribute override_sudo is no set'
             raise AttributeError(message)
