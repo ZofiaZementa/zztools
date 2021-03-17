@@ -1,5 +1,5 @@
 from .step import Step
-from utilities.executor import execute_command
+import utilities.executor
 
 
 class ExecuteStep(Step):
@@ -44,4 +44,4 @@ class ExecuteStep(Step):
 
     def execute(self):
         """Executes the command of this step"""
-        execute_command(self.command)
+        utilities.executor.execute_command(self.command)

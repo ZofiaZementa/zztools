@@ -9,6 +9,7 @@ from collection import Collection
 import pseudopackages
 from exceptions import ConfigValueError, UnsupportedFileTypeError
 import utilities.executor
+import utilities.usertextio
 
 
 def _collectionsfromargs(args):
@@ -66,7 +67,6 @@ def uninstall(args):
         sys.exit(1)
     for collection in collections:
         collection.uninstall()
-
 
 def _parser():
     parser = argparse.ArgumentParser('zztools', \
@@ -133,13 +133,20 @@ def _parser():
     return parser
 
 
-def _main():
-    args = _parser().parse_args()
+def _handle_general_args(args):
+    """Handles the general arguments given to the program"""
     if args.sudo is not None:
         utilities.executor.override_sudo = args.sudo
+    if args.quiet:
+        utilities.usertextio.override_quiet = args.quiet
+
+
+def _main():
+    args = _parser().parse_args()
+    _handle_general_args(args)
     function = _commandfunctionmapping(args.action)
     if not function:
-        _parser().print_usage()
+        _parser().print_usage(file=sys.stderr)
     else:
         function(args)
 

@@ -1,7 +1,9 @@
 import types
 import sys
 import subprocess
+import os
 
+import utilities.usertextio
 
 class Executor(types.ModuleType):
 
@@ -46,7 +48,7 @@ class Executor(types.ModuleType):
         """deletes the current value of _override_sudo"""
         self._override_sudo = None
 
-    def execute_command(self, command: str, sudo=False):
+    def execute_command(self, command: str, sudo=False, quiet=False):
         """Executes the given command, with sudo of the given value
 
         Warning: this functions behavior depends on the value of the override_sudo
@@ -55,14 +57,25 @@ class Executor(types.ModuleType):
         arguments:
         command -- the command which to execute
         sudo -- whether or not to use sudo (default: False)
+        quiet -- whether or not to silence stdout (default: False)
         """
+        # check if quiet is overridden globally
+        if utilities.usertextio.is_quiet_overridden():
+            quiet = utilities.usertextio.override_quiet
+        # check whether to execute quietly and apply the set value
+        if quiet:
+            out = subprocess.DEVNULL
+        else:
+            out = sys.stdout
+        # check whether sudo is overridden globally
         if self.is_sudo_overridden():
             sudo = self.override_sudo
         command = command.split(' ')
         if sudo:
             command = ['sudo'] + command
-        subprocess.run(command, stderr=sys.stderr)
+        subprocess.run(command, stderr=sys.stderr, stdout=out)
 
 
+# change out the module for the class, so properties can be used
 if __name__ != '__main__':
     sys.modules[__name__] = Executor(__name__)

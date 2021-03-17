@@ -18,3 +18,10 @@ class Step():
 
     def __bool__(self):
         return True
+
+    def execute(self):
+        """execute this step
+
+        this function only checks some general things like if it should ask for
+
+        """
