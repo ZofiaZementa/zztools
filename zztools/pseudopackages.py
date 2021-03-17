@@ -1,4 +1,4 @@
-import configfilemanager
+from zztools import configfilemanager
 
 
 def getpackagesfromjson(json):

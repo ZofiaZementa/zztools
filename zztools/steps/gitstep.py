@@ -1,6 +1,6 @@
 from .step import Step
-from utilities import git
-from exceptions import ConfigValueError
+from zztools.utilities import git
+from zztools.exceptions import ConfigValueError
 
 
 class GitStep(Step):

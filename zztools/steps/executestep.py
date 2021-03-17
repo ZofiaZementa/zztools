@@ -1,5 +1,5 @@
 from .step import Step
-import utilities.executor
+from zztools.utilities import executor
 
 
 class ExecuteStep(Step):
@@ -44,4 +44,4 @@ class ExecuteStep(Step):
 
     def execute(self):
         """Executes the command of this step"""
-        utilities.executor.execute_command(self.command)
+        executor.execute_command(self.command)

@@ -3,7 +3,7 @@ import urllib
 
 from git import Repo
 
-from exceptions import ConfigValueError
+from zztools.exceptions import ConfigValueError
 
 
 def clone(url, todir=None):

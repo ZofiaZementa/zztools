@@ -3,7 +3,7 @@ import sys
 import subprocess
 import os
 
-import utilities.usertextio
+from zztools.utilities import usertextio
 
 class Executor(types.ModuleType):
 
@@ -60,8 +60,8 @@ class Executor(types.ModuleType):
         quiet -- whether or not to silence stdout (default: False)
         """
         # check if quiet is overridden globally
-        if utilities.usertextio.is_quiet_overridden():
-            quiet = utilities.usertextio.override_quiet
+        if usertextio.is_quiet_overridden():
+            quiet = usertextio.override_quiet
         # check whether to execute quietly and apply the set value
         if quiet:
             out = subprocess.DEVNULL

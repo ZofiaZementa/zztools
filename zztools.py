@@ -3,13 +3,13 @@ import argparse
 import sys
 import warnings
 
-from todolist import TodoList
-from packagemanager import PackageManager
-from collection import Collection
-import pseudopackages
-from exceptions import ConfigValueError, UnsupportedFileTypeError
-import utilities.executor
-import utilities.usertextio
+from zztools.todolist import TodoList
+from zztools.packagemanager import PackageManager
+from zztools.collection import Collection
+from zztools import pseudopackages
+from zztools.exceptions import ConfigValueError, UnsupportedFileTypeError
+from zztools.utilities import executor
+from zztools.utilities import usertextio
 
 
 def _collectionsfromargs(args):
@@ -136,9 +136,9 @@ def _parser():
 def _handle_general_args(args):
     """Handles the general arguments given to the program"""
     if args.sudo is not None:
-        utilities.executor.override_sudo = args.sudo
+        executor.override_sudo = args.sudo
     if args.quiet:
-        utilities.usertextio.override_quiet = args.quiet
+        usertextio.override_quiet = args.quiet
 
 
 def _main():

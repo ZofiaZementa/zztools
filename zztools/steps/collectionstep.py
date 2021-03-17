@@ -1,8 +1,8 @@
-import pseudopackages
+from zztools import pseudopackages
 from . import step
-from packagemanager import PackageManager
-from collection import Collection
-from exceptions import ConfigValueError
+from zztools.packagemanager import PackageManager
+from zztools.collection import Collection
+from zztools.exceptions import ConfigValueError
 
 
 class CollectionStep(step.Step):

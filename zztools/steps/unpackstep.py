@@ -4,9 +4,9 @@ import uuid
 import os
 
 from .step import Step
-import utilities.downloader
-import utilities.unpacker
-import utilities.temp
+from zztools.utilities import downloader
+from zztools.utilities import unpacker
+from zztools.utilities import temp
 
 
 class UnpackStep(Step):
@@ -79,7 +79,7 @@ class LocalUnpackStep(UnpackStep):
 
     def execute(self):
         """Unpacks the archive at the given path"""
-        utilities.unpacker.unpack(self.archive, self.to)
+        unpacker.unpack(self.archive, self.to)
 
 
 class DownloadUnpackStep(UnpackStep):
@@ -98,7 +98,7 @@ class DownloadUnpackStep(UnpackStep):
         filename in the tempdir, unpacks that file to the path in self and
         deletes the tempfile
         """
-        path = utilities.temp.new_temp_file_path()
-        utilities.downloader.download(self.archive, tofile=path)
-        utilities.unpacker.unpack(path, self.to)
+        path = temp.new_temp_file_path()
+        downloader.download(self.archive, tofile=path)
+        unpacker.unpack(path, self.to)
         os.remove(path)

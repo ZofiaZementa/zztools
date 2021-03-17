@@ -1,5 +1,5 @@
 from .step import Step
-from utilities.downloader import download
+from zztools.utilities import downloader
 
 
 class DownloadStep(Step):
@@ -49,4 +49,4 @@ class DownloadStep(Step):
 
     def execute(self):
         """Downloads the url with the given tool"""
-        download(self.url, todir=self.to)
+        downloader.download(self.url, todir=self.to)

@@ -1,9 +1,9 @@
 import warnings
 
-import pseudopackages
-from packagemanager import PackageManager
-import configfilemanager
-from exceptions import ConfigValueError
+from zztools import pseudopackages
+from zztools.packagemanager import PackageManager
+from zztools import configfilemanager
+from zztools.exceptions import ConfigValueError
 
 
 class Collection():

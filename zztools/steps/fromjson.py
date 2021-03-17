@@ -1,5 +1,5 @@
 from .stepmap import stepmap
-from exceptions import ConfigValueError
+from zztools.exceptions import ConfigValueError
 
 def fromjson(stepjson, listjson):
     """Return a Step object

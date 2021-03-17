@@ -5,10 +5,10 @@ from .gitstep import GitCloneStep
 from .unpackstep import DownloadUnpackStep
 from .liststep import ListStep
 from .rmstep import RmStep
-import todolist as todolist_mod
-import utilities.maker
-import utilities.git
-import utilities.temp
+import zztools.todolist as todolist_mod
+from zztools.utilities import maker
+from zztools.utilities import git
+from zztools.utilities import temp
 
 class MakeStep(Step):
     """A step that makes something
@@ -50,7 +50,7 @@ class MakeStep(Step):
             raise
         target = command.get('target', None)
         if validators.url(path):
-            if utilities.git.is_git_url(path):
+            if git.is_git_url(path):
                 return gitmakestep(path, target)
             else:
                 return downloadmakestep(path, target)
@@ -69,7 +69,7 @@ class MakeStep(Step):
 
     def execute(self):
         """Execute this step"""
-        utilities.maker.make(self.path, self.target)
+        maker.make(self.path, self.target)
 
 
 def gitmakesteps(path, target=None):
@@ -79,7 +79,7 @@ def gitmakesteps(path, target=None):
     path -- path to the makefile
     target -- targte which to make
     """
-    intermediate_path = utilities.temp.new_temp_dir_path()
+    intermediate_path = temp.new_temp_dir_path()
     steps = [GitCloneStep(path, intermediate_path)]
     steps.append(MakeStep(intermediate_path, target))
     steps.append(RmStep(intermediate_path))
@@ -99,7 +99,7 @@ def downloadmakesteps(path, target=None):
     path -- path to the makefile
     target -- targte which to make
     """
-    intermediate_path = utilities.temp.new_temp_dir_path()
+    intermediate_path = temp.new_temp_dir_path()
     steps = [DownloadUnpackStep(path, intermediate_path)]
     steps.append(MakeStep(intermediate_path, target))
     steps.append(RmStep(intermediate_path))

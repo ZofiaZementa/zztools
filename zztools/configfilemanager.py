@@ -2,7 +2,7 @@ import json
 import yaml
 import os
 
-from exceptions import UnsupportedFileTypeError
+from zztools.exceptions import UnsupportedFileTypeError
 
 
 def _getconfigfromjsonfile(path):

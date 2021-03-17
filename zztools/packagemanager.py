@@ -1,6 +1,6 @@
-import configfilemanager
-from exceptions import ConfigValueError
-import utilities.executor
+from zztools import configfilemanager
+from zztools.exceptions import ConfigValueError
+from zztools.utilities import executor
 
 
 class PackageManager():
@@ -201,7 +201,7 @@ class PackageManager():
             sudo =self.sudo
         else:
             sudo = override_sudo
-        utilities.executor.execute_command(command, sudo=sudo)
+        executor.execute_command(command, sudo=sudo)
 
 
     def install(self, packages, override_sudo=None):
