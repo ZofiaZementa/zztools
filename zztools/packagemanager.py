@@ -49,9 +49,9 @@ class PackageManager():
         """
         if name is None:
             if len(json) == 1:
-                name = len(json)[0]
+                name = list(json)[0]
             else:
-                messake = 'No name for packagemanager was provided and ' \
+                message = 'No name for packagemanager was provided and ' \
                         'there were more than one packagemanager in the file'
                 raise ConfigValueError(message)
         try:
